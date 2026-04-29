@@ -57,7 +57,7 @@
   <script>
     const statusBox = document.getElementById("status");
 
-    const JAMARAT_CENTER = [21.42078, 39.87268];
+    const JAMARAT_CENTER = [21.4212, 39.8730];
 
     const map = L.map("map").setView(JAMARAT_CENTER, 18);
 
@@ -70,9 +70,9 @@
     // 1) الجمرات الثلاث (3D)
     // =========================
     const jamarat = [
-      { name: "الجمرة الصغرى",  short: "صغرى",  coords: [21.42059, 39.87417] }, // ← تم التعديل هنا
-      { name: "الجمرة الوسطى",  short: "وسطى",  coords: [21.42090, 39.87250] },
-      { name: "الجمرة الكبرى (العقبة)", short: "كبرى", coords: [21.42040, 39.87275] }
+      { name: "الجمرة الصغرى",  short: "صغرى",  coords: [21.42059, 39.87417] },
+      { name: "الجمرة الوسطى",  short: "وسطى",  coords: [21.4205857, 39.8741735] },
+      { name: "الجمرة الكبرى (العقبة)", short: "كبرى", coords: [21.422076, 39.871134] }
     ];
 
     function jamaratPillarIcon(label) {
@@ -132,21 +132,21 @@
       gateMap["souq_in"],
       [21.42170, 39.87220],
       [21.42120, 39.87240],
-      [21.42090, 39.87250]
+      jamarat[0].coords
     ];
 
     const entryJawhara = [
       gateMap["jawhara_in"],
       [21.42020, 39.87220],
       [21.42050, 39.87240],
-      [21.42090, 39.87250]
+      jamarat[1].coords
     ];
 
     const entryWalk1 = [
       gateMap["walk1_in"],
       [21.42120, 39.87300],
       [21.42100, 39.87270],
-      [21.42090, 39.87250]
+      jamarat[2].coords
     ];
 
     L.polyline(entrySouqAlArab, { color: "red", weight: 5 }).addTo(map);
@@ -157,21 +157,21 @@
     // 4) مسارات الخروج
     // =========================
     const exitSouqAlArab = [
-      [21.42090, 39.87250],
+      jamarat[0].coords,
       [21.42140, 39.87260],
       [21.42180, 39.87280],
       gateMap["souq_out"]
     ];
 
     const exitJawhara = [
-      [21.42090, 39.87250],
+      jamarat[1].coords,
       [21.42050, 39.87270],
       [21.42020, 39.87290],
       gateMap["jawhara_out"]
     ];
 
     const exitWalk1 = [
-      [21.42090, 39.87250],
+      jamarat[2].coords,
       [21.42100, 39.87290],
       [21.42120, 39.87320],
       gateMap["walk1_out"]
