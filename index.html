@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>خريطة منشأة الجمرات</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    body { margin: 0; direction: rtl; font-family: sans-serif; }
+    #map { width: 100vw; height: 100vh; }
+    #status {
+      position: absolute; top: 10px; right: 10px;
+      background: #fff; padding: 8px 12px; border-radius: 6px;
+      z-index: 1000; font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="status">جاري تحميل خريطة الجمرات...</div>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    const statusBox = document.getElementById("status");
+
+    // مركز الجمرات الحقيقي
+    const JAMARAT_CENTER = [21.421900, 39.872450];
+
+    const map = L.map("map").setView(JAMARAT_CENTER, 18);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 20,
+      attribution: "© OpenStreetMap"
+    }).addTo(map);
+
+    // نقاط الجمرات
+    const jamarat = [
+      { name: "الجمرة الصغرى", coords: [21.422618, 39.872171] },
+      { name: "الجمرة الوسطى", coords: [21.422040, 39.872393] },
+      { name: "الجمرة الكبرى (العقبة)", coords: [21.421350, 39.872650] }
+    ];
+
+    jamarat.forEach(j => {
+      L.marker(j.coords).addTo(map).bindPopup(j.name);
+    });
+
+    // مداخل ومخارج حقيقية تقريبية
+    const points = [
+      { name: "مدخل شمالي", coords: [21.423000, 39.872100] },
+      { name: "مدخل جنوبي", coords: [21.420600, 39.872700] },
+      { name: "مخرج شرقي", coords: [21.421900, 39.873300] },
+      { name: "مخرج غربي", coords: [21.421900, 39.871600] }
+    ];
+
+    points.forEach(p => {
+      L.marker(p.coords).addTo(map).bindPopup(p.name);
+    });
+
+    // 🔴 مسار الدخول (شمالي → وسط الجمرات)
+    const entryPath = [
+      [21.423000, 39.872100], // مدخل شمالي
+      [21.422300, 39.872250],
+      [21.421900, 39.872450]  // مركز الجمرات
+    ];
+
+    L.polyline(entryPath, {
+      color: "red",
+      weight: 5,
+      opacity: 0.9
+    }).addTo(map).bindPopup("مسار الدخول");
+
+    // 🟢 مسار الخروج (منطقة الرمي → مخرج شرقي)
+    const exitPath = [
+      [21.421900, 39.872450], // مركز الجمرات
+      [21.421900, 39.872900],
+      [21.421900, 39.873300]  // مخرج شرقي
+    ];
+
+    L.polyline(exitPath, {
+      color: "green",
+      weight: 5,
+      opacity: 0.9
+    }).addTo(map).bindPopup("مسار الخروج");
+
+    statusBox.textContent = "تم تحميل خريطة الجمرات.";
+  </script>
+</body>
+</html>
