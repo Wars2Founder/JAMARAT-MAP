@@ -45,11 +45,6 @@
 <body>
   <div id="status">جاري تحميل خريطة الجمرات...</div>
   <div id="map"></div>
-  <div class="legend">
-    <div><span style="background:red;"></span>مسارات الدخول</div>
-    <div><span style="background:green;"></span>مسارات الخروج</div>
-    <div><span style="background:blue;"></span>موقع الحاج الحالي</div>
-  </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -66,7 +61,7 @@
     }).addTo(map);
 
     // =========================
-    // 1) الجمرات الثلاث (3D)
+    // الجمرات الثلاث فقط
     // =========================
     const jamarat = [
       { name: "الجمرة الصغرى",  short: "صغرى",  coords: [21.420073957229125, 39.87400151104061] },
@@ -93,95 +88,7 @@
     });
 
     // =========================
-    // 2) المداخل والمخارج
-    // =========================
-    const gates = [
-      { key: "souq_in",   name: "مدخل طريق سوق العرب (دخول)", type: "entry", coords: [21.42210, 39.87190] },
-      { key: "jawhara_in",name: "مدخل طريق الجوهرة (دخول)",   type: "entry", coords: [21.41990, 39.87190] },
-      { key: "walk1_in",  name: "مدخل طريق المشاة 1 (دخول)",  type: "entry", coords: [21.42140, 39.87340] },
-
-      { key: "souq_out",   name: "مخرج طريق سوق العرب (خروج)", type: "exit", coords: [21.42210, 39.87290] },
-      { key: "jawhara_out",name: "مخرج طريق الجوهرة (خروج)",   type: "exit", coords: [21.41990, 39.87300] },
-      { key: "walk1_out",  name: "مخرج طريق المشاة 1 (خروج)",  type: "exit", coords: [21.42100, 39.87370] }
-    ];
-
-    const gateMap = {};
-    gates.forEach(g => {
-      gateMap[g.key] = g.coords;
-
-      const color = g.type === "entry" ? "red" : "green";
-      const icon = L.divIcon({
-        className: "",
-        html: `<div style="
-          width:12px;height:12px;border-radius:50%;
-          background:${color};border:2px solid #fff;
-          box-shadow:0 0 4px rgba(0,0,0,.5);
-        "></div>`
-      });
-
-      L.marker(g.coords, { icon, title: g.name })
-        .addTo(map)
-        .bindPopup(g.name);
-    });
-
-    // =========================
-    // 3) مسارات الدخول
-    // =========================
-    const entrySouqAlArab = [
-      gateMap["souq_in"],
-      [21.42170, 39.87220],
-      [21.42120, 39.87240],
-      jamarat[0].coords
-    ];
-
-    const entryJawhara = [
-      gateMap["jawhara_in"],
-      [21.42020, 39.87220],
-      [21.42050, 39.87240],
-      jamarat[1].coords
-    ];
-
-    const entryWalk1 = [
-      gateMap["walk1_in"],
-      [21.42120, 39.87300],
-      [21.42100, 39.87270],
-      jamarat[2].coords
-    ];
-
-    L.polyline(entrySouqAlArab, { color: "red", weight: 5 }).addTo(map);
-    L.polyline(entryJawhara, { color: "red", weight: 5 }).addTo(map);
-    L.polyline(entryWalk1, { color: "red", weight: 5 }).addTo(map);
-
-    // =========================
-    // 4) مسارات الخروج
-    // =========================
-    const exitSouqAlArab = [
-      jamarat[0].coords,
-      [21.42140, 39.87260],
-      [21.42180, 39.87280],
-      gateMap["souq_out"]
-    ];
-
-    const exitJawhara = [
-      jamarat[1].coords,
-      [21.42050, 39.87270],
-      [21.42020, 39.87290],
-      gateMap["jawhara_out"]
-    ];
-
-    const exitWalk1 = [
-      jamarat[2].coords,
-      [21.42100, 39.87290],
-      [21.42120, 39.87320],
-      gateMap["walk1_out"]
-    ];
-
-    L.polyline(exitSouqAlArab, { color: "green", weight: 5 }).addTo(map);
-    L.polyline(exitJawhara, { color: "green", weight: 5 }).addTo(map);
-    L.polyline(exitWalk1, { color: "green", weight: 5 }).addTo(map);
-
-    // =========================
-    // 5) GPS
+    // GPS فقط
     // =========================
     let userMarker = null;
     let userCircle = null;
@@ -202,7 +109,7 @@
         }).addTo(map);
       }
 
-      statusBox.textContent = "تم تحديد موقعك. استخدم المسارات للخروج بأمان.";
+      statusBox.textContent = "تم تحديد موقعك.";
     }
 
     function onLocationError(e) {
@@ -219,7 +126,7 @@
       maxZoom: 19
     });
 
-    statusBox.textContent = "تم تحميل الخريطة. جارٍ تحديد موقعك...";
+    statusBox.textContent = "تم تحميل الخريطة...";
   </script>
 </body>
 </html>
