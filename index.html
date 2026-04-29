@@ -56,7 +56,6 @@
   <script>
     const statusBox = document.getElementById("status");
 
-    // مركز تقريبي لمنشأة الجمرات (تقدر تعدله لو عندك إحداثي أدق)
     const JAMARAT_CENTER = [21.42078, 39.87268];
 
     const map = L.map("map").setView(JAMARAT_CENTER, 18);
@@ -67,11 +66,10 @@
     }).addTo(map);
 
     // =========================
-    // 1) الجمرات الثلاث (3D شكلي)
+    // 1) الجمرات الثلاث (3D)
     // =========================
     const jamarat = [
-      // عدّل الإحداثيات هنا حسب الخريطة الرسمية لو حاب
-      { name: "الجمرة الصغرى",  short: "صغرى",  coords: [21.42140, 39.87230] },
+      { name: "الجمرة الصغرى",  short: "صغرى",  coords: [21.420526, 39.874077] }, // ← تم التعديل هنا
       { name: "الجمرة الوسطى",  short: "وسطى",  coords: [21.42090, 39.87250] },
       { name: "الجمرة الكبرى (العقبة)", short: "كبرى", coords: [21.42040, 39.87275] }
     ];
@@ -95,15 +93,13 @@
     });
 
     // =========================
-    // 2) المداخل والمخارج (نقاط فقط)
+    // 2) المداخل والمخارج
     // =========================
     const gates = [
-      // 🔴 مداخل (حط الإحداثيات من قوقل ماب)
       { key: "souq_in",   name: "مدخل طريق سوق العرب (دخول)", type: "entry", coords: [21.42210, 39.87190] },
       { key: "jawhara_in",name: "مدخل طريق الجوهرة (دخول)",   type: "entry", coords: [21.41990, 39.87190] },
       { key: "walk1_in",  name: "مدخل طريق المشاة 1 (دخول)",  type: "entry", coords: [21.42140, 39.87340] },
 
-      // 🟢 مخارج (حط الإحداثيات من قوقل ماب)
       { key: "souq_out",   name: "مخرج طريق سوق العرب (خروج)", type: "exit", coords: [21.42210, 39.87290] },
       { key: "jawhara_out",name: "مخرج طريق الجوهرة (خروج)",   type: "exit", coords: [21.41990, 39.87300] },
       { key: "walk1_out",  name: "مخرج طريق المشاة 1 (خروج)",  type: "exit", coords: [21.42100, 39.87370] }
@@ -129,20 +125,13 @@
     });
 
     // =========================
-    // 3) مسارات الدخول (كل مسار مصفوفة إحداثيات)
-    //    ✳️ هنا بالضبط تحط الإحداثيات اللي تاخذها من قوقل ماب
+    // 3) مسارات الدخول
     // =========================
-
-    // مثال: طريق سوق العرب (دخول) من بداية الطريق إلى منطقة الرمي
     const entrySouqAlArab = [
-      // [lat, lng], // نقطة 1: بداية المسار من جهة سوق العرب
-      // [lat, lng], // نقطة 2: منعطف حسب الخريطة
-      // [lat, lng], // نقطة 3: قبل الجسر
-      // [lat, lng]  // نقطة 4: منطقة الرمي / المستوى المطلوب
       gateMap["souq_in"],
       [21.42170, 39.87220],
       [21.42120, 39.87240],
-      [21.42090, 39.87250] // تقدر تعدلها لنقطة أدق حسب الخريطة
+      [21.42090, 39.87250]
     ];
 
     const entryJawhara = [
@@ -159,53 +148,40 @@
       [21.42090, 39.87250]
     ];
 
-    L.polyline(entrySouqAlArab, { color: "red", weight: 5, opacity: 0.9 })
-      .addTo(map).bindPopup("مسار الدخول - طريق سوق العرب");
-
-    L.polyline(entryJawhara, { color: "red", weight: 5, opacity: 0.9 })
-      .addTo(map).bindPopup("مسار الدخول - طريق الجوهرة");
-
-    L.polyline(entryWalk1, { color: "red", weight: 5, opacity: 0.9 })
-      .addTo(map).bindPopup("مسار الدخول - طريق المشاة 1");
+    L.polyline(entrySouqAlArab, { color: "red", weight: 5 }).addTo(map);
+    L.polyline(entryJawhara, { color: "red", weight: 5 }).addTo(map);
+    L.polyline(entryWalk1, { color: "red", weight: 5 }).addTo(map);
 
     // =========================
     // 4) مسارات الخروج
     // =========================
-
     const exitSouqAlArab = [
-      // [lat, lng], // نقطة من منطقة الرمي
-      // ...
-      gateMap["souq_out"],
-      [21.42180, 39.87280],
+      [21.42090, 39.87250],
       [21.42140, 39.87260],
-      [21.42090, 39.87250]
-    ].reverse(); // عكس المسار لو تبي يطلع من الجمرات إلى الخارج
+      [21.42180, 39.87280],
+      gateMap["souq_out"]
+    ];
 
     const exitJawhara = [
-      gateMap["jawhara_out"],
-      [21.42020, 39.87290],
+      [21.42090, 39.87250],
       [21.42050, 39.87270],
-      [21.42090, 39.87250]
-    ].reverse();
+      [21.42020, 39.87290],
+      gateMap["jawhara_out"]
+    ];
 
     const exitWalk1 = [
-      gateMap["walk1_out"],
-      [21.42120, 39.87320],
+      [21.42090, 39.87250],
       [21.42100, 39.87290],
-      [21.42090, 39.87250]
-    ].reverse();
+      [21.42120, 39.87320],
+      gateMap["walk1_out"]
+    ];
 
-    L.polyline(exitSouqAlArab, { color: "green", weight: 5, opacity: 0.9 })
-      .addTo(map).bindPopup("مسار الخروج - طريق سوق العرب");
-
-    L.polyline(exitJawhara, { color: "green", weight: 5, opacity: 0.9 })
-      .addTo(map).bindPopup("مسار الخروج - طريق الجوهرة");
-
-    L.polyline(exitWalk1, { color: "green", weight: 5, opacity: 0.9 })
-      .addTo(map).bindPopup("مسار الخروج - طريق المشاة 1");
+    L.polyline(exitSouqAlArab, { color: "green", weight: 5 }).addTo(map);
+    L.polyline(exitJawhara, { color: "green", weight: 5 }).addTo(map);
+    L.polyline(exitWalk1, { color: "green", weight: 5 }).addTo(map);
 
     // =========================
-    // 5) تحديد موقع الحاج GPS
+    // 5) GPS
     // =========================
     let userMarker = null;
     let userCircle = null;
