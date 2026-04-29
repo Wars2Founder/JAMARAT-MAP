@@ -12,7 +12,17 @@
     #status {
       position: absolute; top: 10px; right: 10px;
       background: #fff; padding: 8px 12px; border-radius: 6px;
-      z-index: 1000; font-size: 14px;
+      z-index: 1000; font-size: 13px; box-shadow: 0 0 5px rgba(0,0,0,.2);
+    }
+    .legend {
+      position: absolute; bottom: 10px; right: 10px;
+      background: #fff; padding: 8px 12px; border-radius: 6px;
+      z-index: 1000; font-size: 12px; box-shadow: 0 0 5px rgba(0,0,0,.2);
+      line-height: 1.6;
+    }
+    .legend div { margin-bottom: 3px; }
+    .legend span {
+      display: inline-block; width: 14px; height: 4px; margin-left: 5px;
     }
   </style>
 </head>
@@ -20,14 +30,19 @@
 <body>
   <div id="status">جاري تحميل خريطة الجمرات...</div>
   <div id="map"></div>
+  <div class="legend">
+    <div><span style="background:red;"></span>مسارات الدخول</div>
+    <div><span style="background:green;"></span>مسارات الخروج</div>
+    <div><span style="background:blue;"></span>موقع الحاج الحالي</div>
+  </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
     const statusBox = document.getElementById("status");
 
-    // مركز الجمرات الحقيقي
-    const JAMARAT_CENTER = [21.421900, 39.872450];
+    // مركز منشأة الجمرات (تقريبي من بيانات خرائط مفتوحة)
+    const JAMARAT_CENTER = [21.42078, 39.87268];
 
     const map = L.map("map").setView(JAMARAT_CENTER, 18);
 
@@ -36,56 +51,188 @@
       attribution: "© OpenStreetMap"
     }).addTo(map);
 
-    // نقاط الجمرات
+    // =========================
+    // 1) الجمرات الثلاث (تقريبية)
+    // =========================
     const jamarat = [
-      { name: "الجمرة الصغرى", coords: [21.422618, 39.872171] },
-      { name: "الجمرة الوسطى", coords: [21.422040, 39.872393] },
-      { name: "الجمرة الكبرى (العقبة)", coords: [21.421350, 39.872650] }
+      { name: "الجمرة الصغرى",  coords: [21.42140, 39.87230] },
+      { name: "الجمرة الوسطى",  coords: [21.42090, 39.87250] },
+      { name: "الجمرة الكبرى (العقبة)", coords: [21.42040, 39.87275] }
     ];
 
     jamarat.forEach(j => {
-      L.marker(j.coords).addTo(map).bindPopup(j.name);
+      L.marker(j.coords, { title: j.name })
+        .addTo(map)
+        .bindPopup(j.name);
     });
 
-    // مداخل ومخارج حقيقية تقريبية
-    const points = [
-      { name: "مدخل شمالي", coords: [21.423000, 39.872100] },
-      { name: "مدخل جنوبي", coords: [21.420600, 39.872700] },
-      { name: "مخرج شرقي", coords: [21.421900, 39.873300] },
-      { name: "مخرج غربي", coords: [21.421900, 39.871600] }
+    // =========================
+    // 2) المداخل والمخارج الرئيسية (تقريبية)
+    // =========================
+    const gates = [
+      // مداخل
+      { name: "مدخل طريق سوق العرب (دخول)", type: "entry", coords: [21.42210, 39.87190] },
+      { name: "مدخل طريق الجوهرة (دخول)",   type: "entry", coords: [21.41990, 39.87190] },
+      { name: "مدخل طريق المشاة 1 (دخول)",  type: "entry", coords: [21.42140, 39.87340] },
+
+      // مخارج
+      { name: "مخرج طريق سوق العرب (خروج)", type: "exit", coords: [21.42210, 39.87290] },
+      { name: "مخرج طريق الجوهرة (خروج)",   type: "exit", coords: [21.41990, 39.87300] },
+      { name: "مخرج طريق المشاة 1 (خروج)",  type: "exit", coords: [21.42100, 39.87370] }
     ];
 
-    points.forEach(p => {
-      L.marker(p.coords).addTo(map).bindPopup(p.name);
+    gates.forEach(g => {
+      const color = g.type === "entry" ? "red" : "green";
+      const icon = L.divIcon({
+        className: "custom-icon",
+        html: `<div style="
+          width:10px;height:10px;border-radius:50%;
+          background:${color};border:2px solid #fff;
+          box-shadow:0 0 4px rgba(0,0,0,.5);
+        "></div>`
+      });
+
+      L.marker(g.coords, { icon, title: g.name })
+        .addTo(map)
+        .bindPopup(g.name);
     });
 
-    // 🔴 مسار الدخول (شمالي → وسط الجمرات)
-    const entryPath = [
-      [21.423000, 39.872100], // مدخل شمالي
-      [21.422300, 39.872250],
-      [21.421900, 39.872450]  // مركز الجمرات
+    // =========================
+    // 3) مسارات الدخول (من الطرق إلى منطقة الرمي)
+    // =========================
+
+    // طريق سوق العرب → منطقة الجمرات
+    const entrySouqAlArab = [
+      [21.42210, 39.87190], // مدخل سوق العرب
+      [21.42170, 39.87220],
+      [21.42120, 39.87240], // قرب الجمرة الصغرى
+      [21.42090, 39.87250]  // وسط الجمرات
     ];
 
-    L.polyline(entryPath, {
+    L.polyline(entrySouqAlArab, {
       color: "red",
       weight: 5,
       opacity: 0.9
-    }).addTo(map).bindPopup("مسار الدخول");
+    }).addTo(map).bindPopup("مسار الدخول - طريق سوق العرب");
 
-    // 🟢 مسار الخروج (منطقة الرمي → مخرج شرقي)
-    const exitPath = [
-      [21.421900, 39.872450], // مركز الجمرات
-      [21.421900, 39.872900],
-      [21.421900, 39.873300]  // مخرج شرقي
+    // طريق الجوهرة → منطقة الجمرات
+    const entryJawhara = [
+      [21.41990, 39.87190], // مدخل الجوهرة
+      [21.42020, 39.87220],
+      [21.42050, 39.87240],
+      [21.42090, 39.87250]  // وسط الجمرات
     ];
 
-    L.polyline(exitPath, {
+    L.polyline(entryJawhara, {
+      color: "red",
+      weight: 5,
+      opacity: 0.9
+    }).addTo(map).bindPopup("مسار الدخول - طريق الجوهرة");
+
+    // طريق المشاة 1 (من الشرق) → منطقة الجمرات
+    const entryWalk1 = [
+      [21.42140, 39.87340], // مدخل المشاة 1
+      [21.42120, 39.87300],
+      [21.42100, 39.87270],
+      [21.42090, 39.87250]  // وسط الجمرات
+    ];
+
+    L.polyline(entryWalk1, {
+      color: "red",
+      weight: 5,
+      opacity: 0.9
+    }).addTo(map).bindPopup("مسار الدخول - طريق المشاة 1");
+
+    // =========================
+    // 4) مسارات الخروج (من الجمرات إلى الطرق)
+    // =========================
+
+    // من وسط الجمرات → مخرج سوق العرب
+    const exitSouqAlArab = [
+      [21.42090, 39.87250], // وسط الجمرات
+      [21.42140, 39.87260],
+      [21.42180, 39.87280],
+      [21.42210, 39.87290]  // مخرج سوق العرب
+    ];
+
+    L.polyline(exitSouqAlArab, {
       color: "green",
       weight: 5,
       opacity: 0.9
-    }).addTo(map).bindPopup("مسار الخروج");
+    }).addTo(map).bindPopup("مسار الخروج - طريق سوق العرب");
 
-    statusBox.textContent = "تم تحميل خريطة الجمرات.";
+    // من وسط الجمرات → مخرج الجوهرة
+    const exitJawhara = [
+      [21.42090, 39.87250], // وسط الجمرات
+      [21.42050, 39.87270],
+      [21.42020, 39.87290],
+      [21.41990, 39.87300]  // مخرج الجوهرة
+    ];
+
+    L.polyline(exitJawhara, {
+      color: "green",
+      weight: 5,
+      opacity: 0.9
+    }).addTo(map).bindPopup("مسار الخروج - طريق الجوهرة");
+
+    // من وسط الجمرات → مخرج المشاة 1
+    const exitWalk1 = [
+      [21.42090, 39.87250], // وسط الجمرات
+      [21.42100, 39.87290],
+      [21.42120, 39.87320],
+      [21.42100, 39.87370]  // مخرج المشاة 1
+    ];
+
+    L.polyline(exitWalk1, {
+      color: "green",
+      weight: 5,
+      opacity: 0.9
+    }).addTo(map).bindPopup("مسار الخروج - طريق المشاة 1");
+
+    // =========================
+    // 5) تحديد موقع الحاج (GPS)
+    // =========================
+    let userMarker = null;
+    let userCircle = null;
+
+    function onLocationFound(e) {
+      const radius = e.accuracy || 20;
+
+      if (userMarker) {
+        userMarker.setLatLng(e.latlng);
+        userCircle.setLatLng(e.latlng).setRadius(radius);
+      } else {
+        userMarker = L.marker(e.latlng, {
+          title: "موقعك الحالي"
+        }).addTo(map).bindPopup("موقعك الحالي");
+
+        userCircle = L.circle(e.latlng, {
+          radius: radius,
+          color: "blue",
+          fillColor: "#3f51b5",
+          fillOpacity: 0.2
+        }).addTo(map);
+      }
+
+      statusBox.textContent = "تم تحديد موقعك. استخدم الأسهم والمسارات للخروج بأمان.";
+    }
+
+    function onLocationError(e) {
+      statusBox.textContent = "تعذر تحديد موقعك (تحقق من تفعيل GPS والصلاحيات في المتصفح).";
+    }
+
+    map.on("locationfound", onLocationFound);
+    map.on("locationerror", onLocationError);
+
+    // طلب تحديد الموقع مع متابعة الحركة
+    map.locate({
+      setView: false,
+      watch: true,
+      enableHighAccuracy: true,
+      maxZoom: 19
+    });
+
+    statusBox.textContent = "تم تحميل خريطة الجمرات. جارٍ محاولة تحديد موقعك...";
   </script>
 </body>
 </html>
