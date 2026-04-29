@@ -24,6 +24,22 @@
     .legend span {
       display: inline-block; width: 14px; height: 4px; margin-left: 5px;
     }
+
+    /* شكل 3D للجمرات */
+    .jamarat-pillar {
+      width: 28px;
+      height: 45px;
+      background: linear-gradient(to bottom, #f5f5f5, #c2c2c2);
+      border-radius: 6px;
+      border: 2px solid #999;
+      box-shadow: 0 4px 6px rgba(0,0,0,.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      color: #333;
+    }
   </style>
 </head>
 
@@ -41,7 +57,7 @@
   <script>
     const statusBox = document.getElementById("status");
 
-    // مركز منشأة الجمرات (تقريبي من بيانات خرائط مفتوحة)
+    // مركز منشأة الجمرات
     const JAMARAT_CENTER = [21.42078, 39.87268];
 
     const map = L.map("map").setView(JAMARAT_CENTER, 18);
@@ -52,30 +68,40 @@
     }).addTo(map);
 
     // =========================
-    // 1) الجمرات الثلاث (تقريبية)
+    // 1) الجمرات الثلاث (3D)
     // =========================
     const jamarat = [
-      { name: "الجمرة الصغرى",  coords: [21.42140, 39.87230] },
-      { name: "الجمرة الوسطى",  coords: [21.42090, 39.87250] },
-      { name: "الجمرة الكبرى (العقبة)", coords: [21.42040, 39.87275] }
+      { name: "الجمرة الصغرى",  short: "صغرى",  coords: [21.42140, 39.87230] },
+      { name: "الجمرة الوسطى",  short: "وسطى",  coords: [21.42090, 39.87250] },
+      { name: "الجمرة الكبرى (العقبة)", short: "كبرى", coords: [21.42040, 39.87275] }
     ];
 
+    function jamaratPillarIcon(label) {
+      return L.divIcon({
+        className: "",
+        html: `<div class="jamarat-pillar">${label}</div>`,
+        iconSize: [28, 45],
+        iconAnchor: [14, 45]
+      });
+    }
+
     jamarat.forEach(j => {
-      L.marker(j.coords, { title: j.name })
-        .addTo(map)
-        .bindPopup(j.name);
+      L.marker(j.coords, {
+        icon: jamaratPillarIcon(j.short),
+        title: j.name
+      })
+      .addTo(map)
+      .bindPopup(j.name);
     });
 
     // =========================
-    // 2) المداخل والمخارج الرئيسية (تقريبية)
+    // 2) المداخل والمخارج
     // =========================
     const gates = [
-      // مداخل
       { name: "مدخل طريق سوق العرب (دخول)", type: "entry", coords: [21.42210, 39.87190] },
       { name: "مدخل طريق الجوهرة (دخول)",   type: "entry", coords: [21.41990, 39.87190] },
       { name: "مدخل طريق المشاة 1 (دخول)",  type: "entry", coords: [21.42140, 39.87340] },
 
-      // مخارج
       { name: "مخرج طريق سوق العرب (خروج)", type: "exit", coords: [21.42210, 39.87290] },
       { name: "مخرج طريق الجوهرة (خروج)",   type: "exit", coords: [21.41990, 39.87300] },
       { name: "مخرج طريق المشاة 1 (خروج)",  type: "exit", coords: [21.42100, 39.87370] }
@@ -84,9 +110,9 @@
     gates.forEach(g => {
       const color = g.type === "entry" ? "red" : "green";
       const icon = L.divIcon({
-        className: "custom-icon",
+        className: "",
         html: `<div style="
-          width:10px;height:10px;border-radius:50%;
+          width:12px;height:12px;border-radius:50%;
           background:${color};border:2px solid #fff;
           box-shadow:0 0 4px rgba(0,0,0,.5);
         "></div>`
@@ -98,99 +124,67 @@
     });
 
     // =========================
-    // 3) مسارات الدخول (من الطرق إلى منطقة الرمي)
+    // 3) مسارات الدخول
     // =========================
-
-    // طريق سوق العرب → منطقة الجمرات
     const entrySouqAlArab = [
-      [21.42210, 39.87190], // مدخل سوق العرب
+      [21.42210, 39.87190],
       [21.42170, 39.87220],
-      [21.42120, 39.87240], // قرب الجمرة الصغرى
-      [21.42090, 39.87250]  // وسط الجمرات
+      [21.42120, 39.87240],
+      [21.42090, 39.87250]
     ];
 
-    L.polyline(entrySouqAlArab, {
-      color: "red",
-      weight: 5,
-      opacity: 0.9
-    }).addTo(map).bindPopup("مسار الدخول - طريق سوق العرب");
+    L.polyline(entrySouqAlArab, { color: "red", weight: 5 }).addTo(map);
 
-    // طريق الجوهرة → منطقة الجمرات
     const entryJawhara = [
-      [21.41990, 39.87190], // مدخل الجوهرة
+      [21.41990, 39.87190],
       [21.42020, 39.87220],
       [21.42050, 39.87240],
-      [21.42090, 39.87250]  // وسط الجمرات
+      [21.42090, 39.87250]
     ];
 
-    L.polyline(entryJawhara, {
-      color: "red",
-      weight: 5,
-      opacity: 0.9
-    }).addTo(map).bindPopup("مسار الدخول - طريق الجوهرة");
+    L.polyline(entryJawhara, { color: "red", weight: 5 }).addTo(map);
 
-    // طريق المشاة 1 (من الشرق) → منطقة الجمرات
     const entryWalk1 = [
-      [21.42140, 39.87340], // مدخل المشاة 1
+      [21.42140, 39.87340],
       [21.42120, 39.87300],
       [21.42100, 39.87270],
-      [21.42090, 39.87250]  // وسط الجمرات
+      [21.42090, 39.87250]
     ];
 
-    L.polyline(entryWalk1, {
-      color: "red",
-      weight: 5,
-      opacity: 0.9
-    }).addTo(map).bindPopup("مسار الدخول - طريق المشاة 1");
+    L.polyline(entryWalk1, { color: "red", weight: 5 }).addTo(map);
 
     // =========================
-    // 4) مسارات الخروج (من الجمرات إلى الطرق)
+    // 4) مسارات الخروج
     // =========================
-
-    // من وسط الجمرات → مخرج سوق العرب
     const exitSouqAlArab = [
-      [21.42090, 39.87250], // وسط الجمرات
+      [21.42090, 39.87250],
       [21.42140, 39.87260],
       [21.42180, 39.87280],
-      [21.42210, 39.87290]  // مخرج سوق العرب
+      [21.42210, 39.87290]
     ];
 
-    L.polyline(exitSouqAlArab, {
-      color: "green",
-      weight: 5,
-      opacity: 0.9
-    }).addTo(map).bindPopup("مسار الخروج - طريق سوق العرب");
+    L.polyline(exitSouqAlArab, { color: "green", weight: 5 }).addTo(map);
 
-    // من وسط الجمرات → مخرج الجوهرة
     const exitJawhara = [
-      [21.42090, 39.87250], // وسط الجمرات
+      [21.42090, 39.87250],
       [21.42050, 39.87270],
       [21.42020, 39.87290],
-      [21.41990, 39.87300]  // مخرج الجوهرة
+      [21.41990, 39.87300]
     ];
 
-    L.polyline(exitJawhara, {
-      color: "green",
-      weight: 5,
-      opacity: 0.9
-    }).addTo(map).bindPopup("مسار الخروج - طريق الجوهرة");
+    L.polyline(exitJawhara, { color: "green", weight: 5 }).addTo(map);
 
-    // من وسط الجمرات → مخرج المشاة 1
     const exitWalk1 = [
-      [21.42090, 39.87250], // وسط الجمرات
+      [21.42090, 39.87250],
       [21.42100, 39.87290],
       [21.42120, 39.87320],
-      [21.42100, 39.87370]  // مخرج المشاة 1
+      [21.42100, 39.87370]
     ];
 
-    L.polyline(exitWalk1, {
-      color: "green",
-      weight: 5,
-      opacity: 0.9
-    }).addTo(map).bindPopup("مسار الخروج - طريق المشاة 1");
+    L.polyline(exitWalk1, { color: "green", weight: 5 }).addTo(map);
 
     // =========================
-    // 5) تحديد موقع الحاج (GPS)
+    // 5) تحديد موقع الحاج GPS
     // =========================
     let userMarker = null;
     let userCircle = null;
@@ -202,10 +196,7 @@
         userMarker.setLatLng(e.latlng);
         userCircle.setLatLng(e.latlng).setRadius(radius);
       } else {
-        userMarker = L.marker(e.latlng, {
-          title: "موقعك الحالي"
-        }).addTo(map).bindPopup("موقعك الحالي");
-
+        userMarker = L.marker(e.latlng).addTo(map).bindPopup("موقعك الحالي");
         userCircle = L.circle(e.latlng, {
           radius: radius,
           color: "blue",
@@ -214,17 +205,16 @@
         }).addTo(map);
       }
 
-      statusBox.textContent = "تم تحديد موقعك. استخدم الأسهم والمسارات للخروج بأمان.";
+      statusBox.textContent = "تم تحديد موقعك. استخدم المسارات للخروج بأمان.";
     }
 
     function onLocationError(e) {
-      statusBox.textContent = "تعذر تحديد موقعك (تحقق من تفعيل GPS والصلاحيات في المتصفح).";
+      statusBox.textContent = "تعذر تحديد موقعك (فعّل GPS).";
     }
 
     map.on("locationfound", onLocationFound);
     map.on("locationerror", onLocationError);
 
-    // طلب تحديد الموقع مع متابعة الحركة
     map.locate({
       setView: false,
       watch: true,
@@ -232,7 +222,7 @@
       maxZoom: 19
     });
 
-    statusBox.textContent = "تم تحميل خريطة الجمرات. جارٍ محاولة تحديد موقعك...";
+    statusBox.textContent = "تم تحميل الخريطة. جارٍ تحديد موقعك...";
   </script>
 </body>
 </html>
